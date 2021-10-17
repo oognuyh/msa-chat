@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  auth-service:
+    container_name: auth-service
+    image: jboss/keycloak:14.0.0
+    volumes:
+      - ./realm:/tmp/keycloak
+    ports:
+      - 8090:8080
+    restart: on-failure
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_IMPORT: /tmp/keycloak/chat-realm.json
+      DB_VENDOR: postgres
+      DB_ADDR: auth-service-db
+      DB_DATABASE: keycloak
+      DB_SCHEMA: public
+      DB_USER: keycloak
+      DB_PASSWORD: keycloak
+    depends_on:
+      - auth-service-db
+  
+  auth-service-db:
+    container_name: auth-service-db
+    image: postgres
+    volumes:
+        - ./auth-service-db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+      
