@@ -38,6 +38,11 @@ spring:
         predicates:
         - Path=/users/**
 
+      - id: image-service
+        uri: lb://image-service
+        predicates:
+        - Path=/images/**
+
       - id: friend-service
         uri: lb://friend-service
         predicates:

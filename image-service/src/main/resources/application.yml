@@ -1,0 +1,36 @@
+server:
+  port: 45222
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minio
+  secret-key: miniopwd
+  bucket: public
+
+spring:
+  application:
+    name: image-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8090/auth/realms/chat
+          jwk-set-uri: http://localhost:8090/auth/realms/chat/protocol/openid-connect/certs
+
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+      
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
