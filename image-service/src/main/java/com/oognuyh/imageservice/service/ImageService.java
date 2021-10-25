@@ -9,5 +9,6 @@ import io.minio.GetObjectResponse;
 public interface ImageService {
     
     GetObjectResponse findAvatarByUserId(String userId);
-    NewImageResponse uploadCurrentUserAvatar(String currentUserId, MultipartFile avatar);
+    NewImageResponse uploadAvatarByUserId(String userId, MultipartFile avatar);
+    void deleteAvatarByUserId(String userId);
 }

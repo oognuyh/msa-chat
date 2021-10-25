@@ -11,6 +11,13 @@ spring:
         jwt:
           issuer-uri: http://localhost:8090/auth/realms/chat
           jwk-set-uri: http://localhost:8090/auth/realms/chat/protocol/openid-connect/certs
+    
+  kafka:
+    bootstrap-servers: http://localhost:9092
+    template:
+      avatar-changed-topic: avatar-changed-topic
+    consumer:
+      avatar-changed-group-id: avatar-changed-group-id
 
 keycloak:
   auth-server-url: http://localhost:8090/auth

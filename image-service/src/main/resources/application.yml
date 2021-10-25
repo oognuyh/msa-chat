@@ -1,5 +1,5 @@
 server:
-  port: 45222
+  port: 0
 
 minio:
   endpoint: http://localhost:9000
@@ -25,12 +25,19 @@ spring:
       max-file-size: 5MB
       max-request-size: 10MB
 
+  kafka:
+    bootstrap-servers: http://localhost:9092
+    template:
+      avatar-changed-topic: avatar-changed-topic
+
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8081/eureka
-      
+  
+  gateway-uri: http://localhost:8082
+
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}

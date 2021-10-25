@@ -13,22 +13,22 @@ import lombok.Setter;
 @Configuration
 @ConfigurationProperties(prefix = "minio")
 public class MinioConfig {
-    private String endpoint;
-    private String accessKey;
-    private String secretKey;
-    private String bucket;
+    private String ENDPOINT;
+    private String ACCESS_KEY;
+    private String SECRET_KEY;
+    private String BUCKET;
 
     @Bean
     public MinioClient minioClient() {
         try {
             MinioClient minioClient = new MinioClient.Builder()
-                .endpoint(endpoint) 
-                .credentials(accessKey, secretKey) 
+                .endpoint(ENDPOINT) 
+                .credentials(ACCESS_KEY, SECRET_KEY) 
                 .build();
 
-            if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
+            if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(BUCKET).build())) {
                 minioClient.makeBucket(MakeBucketArgs.builder()
-                    .bucket(bucket)
+                    .bucket(BUCKET)
                     .build()
                 );
             }

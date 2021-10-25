@@ -1,5 +1,6 @@
 package com.oognuyh.userservice.payload.request;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 import lombok.AllArgsConstructor;
@@ -18,7 +19,6 @@ public class UserUpdateRequest {
     private String lastName;
 
     @NotBlank
+    @Email
     private String email;
-
-    private String imageUrl = "";
 }

@@ -6,7 +6,11 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.NotFoundException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oognuyh.userservice.config.KeycloakProperties;
+import com.oognuyh.userservice.payload.event.AvatarChangedEvent;
 import com.oognuyh.userservice.payload.request.PasswordUpdateRequest;
 import com.oognuyh.userservice.payload.request.UserUpdateRequest;
 import com.oognuyh.userservice.payload.response.UserResponse;
@@ -18,6 +22,8 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class KeycloakUserServiceImpl implements UserService {
     private final KeycloakProperties keycloakProperties;
+    private final ObjectMapper objectMapper;
     private final Keycloak keycloak;
 
     private UsersResource getUsersResource() {
@@ -67,7 +74,6 @@ public class KeycloakUserServiceImpl implements UserService {
         userRepresentation.setEmail(request.getEmail());
         userRepresentation.setFirstName(request.getFirstName());
         userRepresentation.setLastName(request.getLastName());
-        userRepresentation.singleAttribute("imageUrl", request.getImageUrl());
 
         // Update user
         userResource.update(userRepresentation);
@@ -104,6 +110,24 @@ public class KeycloakUserServiceImpl implements UserService {
 
         // Change user status 
         userRepresentation.singleAttribute("status", previousStatus.equals("off") ? "on" : "off");
+
+        userResource.update(userRepresentation);
+    }
+
+    @KafkaListener(
+        topics = "${spring.kafka.template.avatar-changed-topic}", 
+        groupId = "${spring.kafka.consumer.avatar-changed-group-id}",
+        containerFactory = "avatarCangedListenerFactory"
+    )
+    private void onAvatarChanged(@Payload String payload) throws JsonMappingException, JsonProcessingException {
+        AvatarChangedEvent event = objectMapper.readValue(payload, AvatarChangedEvent.class);
+        
+        log.info("onAvatarChanged: {}", event);
+
+        UserResource userResource = getUsersResource().get(event.getUserId());
+        UserRepresentation userRepresentation = userResource.toRepresentation();
+
+        userRepresentation.singleAttribute("imageUrl", event.getImageUrl());
 
         userResource.update(userRepresentation);
     }
