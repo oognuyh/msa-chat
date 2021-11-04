@@ -8,9 +8,9 @@ import com.oognuyh.userservice.payload.response.UserResponse;
 
 public interface UserService {
     
-    List<UserResponse> findAll();
+    List<UserResponse> findUsersByQuery(String queryTerm);
     UserResponse findById(String id);
     void updateStatus(String id);
     void updatePassword(String id, PasswordUpdateRequest request);
-    UserResponse updateInfo(String id, UserUpdateRequest request);
+    UserResponse updateDetails(String id, UserUpdateRequest request);
 }

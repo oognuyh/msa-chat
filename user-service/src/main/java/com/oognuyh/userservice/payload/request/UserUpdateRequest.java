@@ -21,4 +21,6 @@ public class UserUpdateRequest {
     @NotBlank
     @Email
     private String email;
+
+    private String statusMessage = "";
 }

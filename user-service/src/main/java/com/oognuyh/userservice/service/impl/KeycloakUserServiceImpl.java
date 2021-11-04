@@ -45,14 +45,14 @@ public class KeycloakUserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> findAll() {
-        return getUsersResource().list()
-            .stream()
-            .peek(System.out::println)
+    public List<UserResponse> findUsersByQuery(String queryTerm) {
+        log.info("queryTerm: {}", queryTerm);
+        return getUsersResource().search(queryTerm, 0, null, false).stream()
             .map(UserResponse::of)
+            .peek(System.out::println)
             .collect(Collectors.toList());
     }
-
+    
     @Override
     public UserResponse findById(String id) {
         try {
@@ -66,7 +66,7 @@ public class KeycloakUserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateInfo(String id, UserUpdateRequest request) {
+    public UserResponse updateDetails(String id, UserUpdateRequest request) {
         UserResource userResource = getUsersResource().get(id);    
         UserRepresentation userRepresentation = userResource.toRepresentation();
 
@@ -74,6 +74,7 @@ public class KeycloakUserServiceImpl implements UserService {
         userRepresentation.setEmail(request.getEmail());
         userRepresentation.setFirstName(request.getFirstName());
         userRepresentation.setLastName(request.getLastName());
+        userRepresentation.singleAttribute("statusMessage", request.getStatusMessage());
 
         // Update user
         userResource.update(userRepresentation);
