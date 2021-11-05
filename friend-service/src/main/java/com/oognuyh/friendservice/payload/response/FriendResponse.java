@@ -13,7 +13,7 @@ public class FriendResponse {
 
     private String id;
 
-    private String fullName;
+    private String name;
 
     private String imageUrl;
 
@@ -40,7 +40,7 @@ public class FriendResponse {
     }
 
     public FriendResponse setDetails(UserResponse userResponse) {
-        this.fullName = userResponse.getFullName();
+        this.name = userResponse.getName();
         this.imageUrl = userResponse.getImageUrl();
         this.isActive = userResponse.getIsActive();
 

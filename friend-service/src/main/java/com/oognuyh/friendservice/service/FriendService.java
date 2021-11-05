@@ -8,6 +8,6 @@ import com.oognuyh.friendservice.payload.response.FriendResponse;
 public interface FriendService {
 
     List<FriendResponse> findFriendsByUserId(String userId);
-    FriendResponse addNewFriend(AddingNewFriendRequest request);
+    FriendResponse addNewFriend(String userId, AddingNewFriendRequest request);
     void deleteFriendByIdAndUserId(String id, String userId);
 }

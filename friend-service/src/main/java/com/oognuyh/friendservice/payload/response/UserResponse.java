@@ -11,7 +11,7 @@ public class UserResponse {
     
     private String id;
     
-    private String fullName;
+    private String name;
 
     private String imageUrl;
 

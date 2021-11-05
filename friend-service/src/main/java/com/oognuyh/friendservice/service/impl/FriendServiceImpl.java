@@ -27,11 +27,11 @@ public class FriendServiceImpl implements FriendService {
             .collect(Collectors.toList());
     }
 
-    public FriendResponse addNewFriend(AddingNewFriendRequest request) {
+    public FriendResponse addNewFriend(String userId, AddingNewFriendRequest request) {        
         return FriendResponse.of(
                 friendRepository.save(Friend.builder()
                     .id(request.getFriendId())
-                    .userId(request.getUserId())
+                    .userId(userId)
                     .build()))
             .setDetails(userRepository.findUserById(request.getFriendId()));
     }
