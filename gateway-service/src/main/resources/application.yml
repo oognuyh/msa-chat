@@ -46,12 +46,17 @@ spring:
       - id: friend-service
         uri: lb://friend-service
         predicates:
-        - Path=/friend**
+        - Path=/friends/**
         
       - id: chat-service
         uri: lb://chat-service
         predicates:
-        - Path=/chat/**, /ws/**
+        - Path=/chat/**
+
+      - id: notification-service
+        uri: lb://notification-service
+        predicates:
+        - Path=/notifications/**, /ws/**
         
 eureka:
   client:
