@@ -2,6 +2,7 @@ package com.oognuyh.chatservice.controller;
 
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.oognuyh.chatservice.payload.request.NewMessageRequest;
 import com.oognuyh.chatservice.payload.response.ChannelResponse;
 import com.oognuyh.chatservice.payload.response.MessageResponse;
@@ -71,13 +72,13 @@ public class ChatController {
         @PathVariable("messageId") String messageId,
         @CurrentUserId String currentUserId
     ) {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(chatService.read(messageId, currentUserId));
     }
 
     @PostMapping("/channels/{channelId}/messages")
     public ResponseEntity<MessageResponse> send(
         @RequestBody NewMessageRequest request
-    ) {
+    ) throws JsonProcessingException {
         return ResponseEntity.ok().body(chatService.send(request));
     }
 

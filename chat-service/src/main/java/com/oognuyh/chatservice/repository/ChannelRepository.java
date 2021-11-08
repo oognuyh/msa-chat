@@ -12,4 +12,5 @@ public interface ChannelRepository extends MongoRepository<Channel, String> {
     
     Optional<Channel> findChannelByTypeAndParticipantIds(Type type, List<String> participantIds);
     List<Channel> findChannelsByParticipantIdsOrderByLastMessageCreatedAtDesc(String participantId);
+    List<Channel> findChannelsByParticipantIds(String participantId);
 }
