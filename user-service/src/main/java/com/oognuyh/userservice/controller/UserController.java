@@ -2,7 +2,9 @@ package com.oognuyh.userservice.controller;
 
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.oognuyh.userservice.payload.request.PasswordUpdateRequest;
+import com.oognuyh.userservice.payload.request.StatusUpdateRequest;
 import com.oognuyh.userservice.payload.request.UserUpdateRequest;
 import com.oognuyh.userservice.payload.response.UserResponse;
 import com.oognuyh.userservice.service.UserService;
@@ -46,7 +48,7 @@ public class UserController {
         @CurrentUserId String currentUserId,
         @PathVariable String id, 
         @RequestBody UserUpdateRequest request
-    ) {
+    ) throws JsonProcessingException {
         if (!currentUserId.equals(id)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         return ResponseEntity.ok(userService.updateDetails(id, request));
@@ -68,11 +70,12 @@ public class UserController {
     @PutMapping("/{id}/status")
     public ResponseEntity<Void> updateStatus(
         @CurrentUserId String currentUserId,
-        @PathVariable String id
-    ) {
+        @PathVariable String id,
+        @RequestBody StatusUpdateRequest request
+    ) throws JsonProcessingException {
         if (!currentUserId.equals(id)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        userService.updateStatus(id);
+        userService.updateStatus(id, request);
 
         return ResponseEntity.ok().build();
     }

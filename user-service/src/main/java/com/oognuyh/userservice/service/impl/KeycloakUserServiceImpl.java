@@ -11,7 +11,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oognuyh.userservice.config.KeycloakProperties;
 import com.oognuyh.userservice.payload.event.AvatarChangedEvent;
+import com.oognuyh.userservice.payload.event.UserChangedEvent;
 import com.oognuyh.userservice.payload.request.PasswordUpdateRequest;
+import com.oognuyh.userservice.payload.request.StatusUpdateRequest;
 import com.oognuyh.userservice.payload.request.UserUpdateRequest;
 import com.oognuyh.userservice.payload.response.UserResponse;
 import com.oognuyh.userservice.service.UserService;
@@ -21,8 +23,10 @@ import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,8 +39,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class KeycloakUserServiceImpl implements UserService {
     private final KeycloakProperties keycloakProperties;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
     private final Keycloak keycloak;
+
+    @Value("${spring.kafka.template.user-changed-topic}")
+    private String USER_CHANGED_TOPIC;
+    
 
     private UsersResource getUsersResource() {
         return keycloak
@@ -46,7 +55,6 @@ public class KeycloakUserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> findUsersByQuery(String queryTerm) {
-        log.info("queryTerm: {}", queryTerm);
         return getUsersResource().search(queryTerm, 0, null, false).stream()
             .map(UserResponse::of)
             .peek(System.out::println)
@@ -66,8 +74,8 @@ public class KeycloakUserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateDetails(String id, UserUpdateRequest request) {
-        UserResource userResource = getUsersResource().get(id);    
+    public UserResponse updateDetails(String userId, UserUpdateRequest request) throws JsonProcessingException {
+        UserResource userResource = getUsersResource().get(userId);    
         UserRepresentation userRepresentation = userResource.toRepresentation();
 
         // Set props & attrs
@@ -78,14 +86,15 @@ public class KeycloakUserServiceImpl implements UserService {
 
         // Update user
         userResource.update(userRepresentation);
+        kafkaTemplate.send(USER_CHANGED_TOPIC, objectMapper.writeValueAsString(new UserChangedEvent(userId)));
 
         // Return the updated
-        return UserResponse.of(getUsersResource().get(id).toRepresentation());
+        return UserResponse.of(getUsersResource().get(userId).toRepresentation());
     }
 
     @Override
-    public void updatePassword(String id, PasswordUpdateRequest request) {
-        UserResource userResource = getUsersResource().get(id);
+    public void updatePassword(String userId, PasswordUpdateRequest request) {
+        UserResource userResource = getUsersResource().get(userId);
         UserRepresentation userRepresentation = userResource.toRepresentation();
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
 
@@ -100,30 +109,25 @@ public class KeycloakUserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateStatus(String id) {
-        UserResource userResource = getUsersResource().get(id);
+    public void updateStatus(String userId, StatusUpdateRequest request) throws JsonProcessingException {
+        UserResource userResource = getUsersResource().get(userId);
         UserRepresentation userRepresentation = userResource.toRepresentation();
         
-        String previousStatus = "off";
-        if (userRepresentation.getAttributes() != null) {
-            previousStatus = userRepresentation.getAttributes().getOrDefault("status", Collections.singletonList("off")).get(0);
-        }
-
         // Change user status 
-        userRepresentation.singleAttribute("status", previousStatus.equals("off") ? "on" : "off");
+        userRepresentation.singleAttribute("status", request.getStatus());
 
         userResource.update(userRepresentation);
+        
+        kafkaTemplate.send(USER_CHANGED_TOPIC, objectMapper.writeValueAsString(new UserChangedEvent(userId)));
     }
 
     @KafkaListener(
         topics = "${spring.kafka.template.avatar-changed-topic}", 
         groupId = "${spring.kafka.consumer.avatar-changed-group-id}",
-        containerFactory = "avatarCangedListenerFactory"
+        containerFactory = "avatarChangedListenerFactory"
     )
     private void onAvatarChanged(@Payload String payload) throws JsonMappingException, JsonProcessingException {
         AvatarChangedEvent event = objectMapper.readValue(payload, AvatarChangedEvent.class);
-        
-        log.info("onAvatarChanged: {}", event);
 
         UserResource userResource = getUsersResource().get(event.getUserId());
         UserRepresentation userRepresentation = userResource.toRepresentation();
