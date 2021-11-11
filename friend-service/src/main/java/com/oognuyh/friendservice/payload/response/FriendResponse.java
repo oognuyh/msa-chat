@@ -15,7 +15,11 @@ public class FriendResponse {
 
     private String name;
 
+    private String email;
+
     private String imageUrl;
+
+    private String statusMessage;
 
     @JsonProperty("isActive")
     private Boolean isActive;
@@ -41,8 +45,10 @@ public class FriendResponse {
 
     public FriendResponse setDetails(UserResponse userResponse) {
         this.name = userResponse.getName();
+        this.email = userResponse.getEmail();
         this.imageUrl = userResponse.getImageUrl();
         this.isActive = userResponse.getIsActive();
+        this.statusMessage = userResponse.getStatusMessage();
 
         return this;
     }

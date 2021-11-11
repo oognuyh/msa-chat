@@ -1,21 +1,21 @@
 package com.oognuyh.friendservice.config;
 
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@Component
+@Configuration
+@EnableFeignClients(basePackages = { "com.oognuyh.friendservice.repository" })
 public class FeignConfig {
 
     @Bean
@@ -25,8 +25,6 @@ public class FeignConfig {
             @Override
             public void apply(RequestTemplate template) {
                 Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-                log.info("jwt: {}", jwt.getTokenValue());
 
                 template.header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", jwt.getTokenValue()));
             }            

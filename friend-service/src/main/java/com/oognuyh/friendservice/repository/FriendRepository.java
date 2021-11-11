@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, FriendPK> {
     
+    List<Friend> findFriendsById(String id);
     List<Friend> findFriendsByUserId(String userId);
     void deleteFriendByIdAndUserId(String id, String userId);
 }
