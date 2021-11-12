@@ -1,6 +1,7 @@
 package com.oognuyh.imageservice.service.impl;
 
 import java.io.InputStream;
+import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oognuyh.imageservice.payload.event.AvatarChangedEvent;
@@ -40,14 +41,12 @@ public class ImageServiceImpl implements ImageService {
     private String GATEWAY_URI;
 
     @Override
-    public GetObjectResponse findAvatarByUserId(String userId) {
+    public GetObjectResponse findAvatarById(String id) {
         try {
             GetObjectResponse avatar = minioClient.getObject(GetObjectArgs.builder()
                 .bucket(BUCKET)
-                .object("avatars/" + userId)
+                .object("avatars/" + id)
                 .build());
-
-            log.info("{}", avatar.headers());
 
             return avatar;
         } catch (Exception e) {
@@ -61,27 +60,30 @@ public class ImageServiceImpl implements ImageService {
     public NewImageResponse uploadAvatarByUserId(String userId, MultipartFile avatar) {
         try {
             InputStream avatarInputStream = avatar.getInputStream();
+            String fileName = UUID.randomUUID().toString();
 
             minioClient.putObject(PutObjectArgs.builder()
                 .bucket(BUCKET)
-                .object("avatars/" + userId)
+                .object("avatars/" + fileName)
                 .stream(avatarInputStream, avatarInputStream.available(), -1)
                 .contentType(avatar.getContentType())
                 .build()
             );
+
+            String imageUrl = GATEWAY_URI + "/images/avatars/" + fileName;
 
             kafkaTemplate.send(
                 AVATAR_CHANGED_TOPIC, 
                 objectMapper.writeValueAsString(
                     AvatarChangedEvent.builder()
                         .userId(userId)
-                        .imageUrl(GATEWAY_URI + "/images/avatars/" + userId)
+                        .imageUrl(imageUrl)
                         .build()
                 )
             );
 
             return NewImageResponse.builder()
-                .imageUrl(GATEWAY_URI + "/images/avatars/" + userId)
+                .imageUrl(imageUrl)
                 .build();
         } catch (Exception e) {
             log.error("Failed to upload file: {}", e.getMessage());
@@ -91,11 +93,11 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public void deleteAvatarByUserId(String userId) {
+    public void deleteAvatarById(String id) {
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
                 .bucket(BUCKET)
-                .object(userId)
+                .object(id)
                 .build()
             );
 
@@ -103,7 +105,7 @@ public class ImageServiceImpl implements ImageService {
                 AVATAR_CHANGED_TOPIC, 
                 objectMapper.writeValueAsString(
                     AvatarChangedEvent.builder()
-                        .userId(userId)
+                        .userId(id)
                         .imageUrl("")
                         .build()
                 )

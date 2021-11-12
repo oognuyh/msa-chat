@@ -7,7 +7,6 @@ import com.oognuyh.imageservice.service.ImageService;
 import com.oognuyh.imageservice.util.annotation.CurrentUserId;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.minio.GetObjectResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +26,11 @@ import lombok.RequiredArgsConstructor;
 public class ImageController {
     private final ImageService imageService;
 
-    @GetMapping("/avatars/{userId}")
+    @GetMapping("/avatars/{id}")
     public ResponseEntity<byte[]> findAvatarByUserId(
-        @PathVariable("userId") String userId
+        @PathVariable String id
     ) throws IOException {
-        GetObjectResponse avatar = imageService.findAvatarByUserId(userId);
+        GetObjectResponse avatar = imageService.findAvatarById(id);
 
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, avatar.headers().get(HttpHeaders.CONTENT_TYPE))
@@ -47,13 +45,13 @@ public class ImageController {
         return ResponseEntity.ok(imageService.uploadAvatarByUserId(currentUserId, avatar));
     }
 
-    @DeleteMapping("/avatars/{userId}")
+    @DeleteMapping("/avatars/{id}")
     public ResponseEntity<Void> deleteAvatarByUserId(
         @CurrentUserId String currentUserId,
-        @PathVariable String userId
-    ) {
-        if (!currentUserId.equals(userId)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        
+        @PathVariable String id
+    ) { 
+        imageService.deleteAvatarById(id);
+
         return ResponseEntity.ok().build();
     }
 }
