@@ -129,6 +129,8 @@ public class KeycloakUserServiceImpl implements UserService {
     private void onAvatarChanged(@Payload String payload) throws JsonMappingException, JsonProcessingException {
         AvatarChangedEvent event = objectMapper.readValue(payload, AvatarChangedEvent.class);
 
+        log.info("event: {}", event);
+
         UserResource userResource = getUsersResource().get(event.getUserId());
         UserRepresentation userRepresentation = userResource.toRepresentation();
 
