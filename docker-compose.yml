@@ -1,0 +1,161 @@
+version: '3'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    expose:
+      - "2181"
+    networks:
+      - kafka-network
+    
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    expose:
+      - "9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - kafka-network
+      - cloud-network
+            
+  discovery-service:
+    build: ./discovery-service
+    container_name: discovery-service
+    ports:
+      - "8081:8081"
+    networks:
+      - cloud-network
+      
+  gateway-service:
+    build: ./gateway-service
+    container_name: gateway-service
+    depends_on:
+      - discovery-service
+    restart: on-failure
+    ports:
+      - "8082:8082"
+    networks:
+      - cloud-network
+      
+  auth-service:
+    image: jboss/keycloak:14.0.0
+    container_name: auth-service
+    depends_on:
+      - auth-service-db
+    ports:
+      - "8080:8080"
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: auth-service-db
+      DB_PORT: 5432
+      DB_DATABASE: keycloak
+      DB_SCHEMA: public
+      DB_USER: keycloak
+      DB_PASSWORD: keycloak
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+#      KEYCLOAK_IMPORT: /tmp/keycloak/chat-realm.json 
+    volumes:
+      - ./auth-service/realm:/tmp/keycloak
+    networks:
+      - auth-network
+      - cloud-network
+      
+  auth-service-db:
+    image: postgres
+    container_name: auth-service-db
+    expose:
+      - 5432
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - ./auth-service/auth-service-db:/var/lib/postgresql/data
+    networks:
+      - auth-network
+      
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    depends_on:
+      - gateway-service
+      - kafka
+    networks:
+      - cloud-network
+      
+  image-service:
+    build: ./image-service
+    container_name: image-service
+    depends_on:
+      - minio
+    networks:
+      - image-network
+      - cloud-network
+      
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniopwd
+    ports:
+      - "9001:9001"
+    expose:
+      - 9000
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./image-service/minio/data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - image-network
+    
+  friend-service:
+    build: ./friend-service
+    container_name: friend-service
+    depends_on:
+      - user-service
+    networks:
+      - cloud-network
+  
+  chat-service:
+    build: ./chat-service
+    container_name: chat-service
+    depends_on:
+      - user-service
+    networks:
+      - cloud-network
+      
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    depends_on:
+      - kafka
+      - gateway-service
+    networks:
+      - cloud-network
+      
+  frontend-web:
+    build: ./frontend-web
+    container_name: frontend-web
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+    networks:
+      - cloud-network
+      
+networks:
+  cloud-network:
+  auth-network:
+  image-network:
+  kafka-network:

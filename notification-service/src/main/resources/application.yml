@@ -9,11 +9,10 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8090/auth/realms/chat
-          jwk-set-uri: http://localhost:8090/auth/realms/chat/protocol/openid-connect/certs
+          jwk-set-uri: http://auth-service:8080/auth/realms/chat/protocol/openid-connect/certs
 
   kafka:
-    bootstrap-servers: http://localhost:9092
+    bootstrap-servers: http://kafka:9092
     template:
       notification-topic: notification-topic
     consumer:
@@ -24,7 +23,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8081/eureka
+      defaultZone: http://discovery-service:8081/eureka
       
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
