@@ -6,4 +6,4 @@ export const upload = (request) => http.post('/images/avatars', request, {
   }
 })
 
-export const deleteAvatarByImageUrl = (imageUrl) => http.delete(imageUrl)
+export const deleteAvatarByAvatarId = (avatarId) => http.delete(`/images/avatars/${avatarId}`)

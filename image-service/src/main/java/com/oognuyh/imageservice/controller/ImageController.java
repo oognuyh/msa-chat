@@ -26,11 +26,11 @@ import lombok.RequiredArgsConstructor;
 public class ImageController {
     private final ImageService imageService;
 
-    @GetMapping("/avatars/{id}")
-    public ResponseEntity<byte[]> findAvatarByUserId(
-        @PathVariable String id
+    @GetMapping("/avatars/{avatarId}")
+    public ResponseEntity<byte[]> findAvatarByAvatarId(
+        @PathVariable String avatarId
     ) throws IOException {
-        GetObjectResponse avatar = imageService.findAvatarById(id);
+        GetObjectResponse avatar = imageService.findAvatarByAvatarId(avatarId);
 
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, avatar.headers().get(HttpHeaders.CONTENT_TYPE))
@@ -45,12 +45,12 @@ public class ImageController {
         return ResponseEntity.ok(imageService.uploadAvatarByUserId(currentUserId, avatar));
     }
 
-    @DeleteMapping("/avatars/{id}")
-    public ResponseEntity<Void> deleteAvatarByUserId(
+    @DeleteMapping("/avatars/{avatarId}")
+    public ResponseEntity<Void> deleteAvatarByAvatarId(
         @CurrentUserId String currentUserId,
-        @PathVariable String id
+        @PathVariable String avatarId
     ) { 
-        imageService.deleteAvatarById(id);
+        imageService.deleteAvatarByAvatarId(currentUserId, avatarId);
 
         return ResponseEntity.ok().build();
     }

@@ -41,11 +41,11 @@ public class ImageServiceImpl implements ImageService {
     private String GATEWAY_URI;
 
     @Override
-    public GetObjectResponse findAvatarById(String id) {
+    public GetObjectResponse findAvatarByAvatarId(String avatarId) {
         try {
             GetObjectResponse avatar = minioClient.getObject(GetObjectArgs.builder()
                 .bucket(BUCKET)
-                .object("avatars/" + id)
+                .object("avatars/" + avatarId)
                 .build());
 
             return avatar;
@@ -93,11 +93,11 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public void deleteAvatarById(String id) {
+    public void deleteAvatarByAvatarId(String userId, String avatarId) {
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
                 .bucket(BUCKET)
-                .object(id)
+                .object("avatars/" + avatarId)
                 .build()
             );
 
@@ -105,7 +105,7 @@ public class ImageServiceImpl implements ImageService {
                 AVATAR_CHANGED_TOPIC, 
                 objectMapper.writeValueAsString(
                     AvatarChangedEvent.builder()
-                        .userId(id)
+                        .userId(userId)
                         .imageUrl("")
                         .build()
                 )

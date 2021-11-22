@@ -170,13 +170,14 @@ export default {
     async updateDetails() {
       if (this.user.imageUrl !== this.newAvatarUrl) {
         if (this.newAvatar) {
-          // upload
           const newImageRequest = new FormData()
 
-          newImageRequest.append("avatar", this.newAvatar)
-          console.log(await imageApi.upload(newImageRequest))
+          newImageRequest.append('avatar', this.newAvatar)
+          await imageApi.upload(newImageRequest)
         } else {
-          imageApi.deleteByImageUrl(this.user.imageUrl)
+          if (this.user.imageUrl) {
+            await imageApi.deleteAvatarByAvatarId(this.user.imageUrl.split('/').pop())
+          } 
         }
       } 
 
