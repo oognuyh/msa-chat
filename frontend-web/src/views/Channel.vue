@@ -15,7 +15,10 @@
       </v-toolbar-title>
 
       <v-spacer />
-      <v-btn icon>
+      <v-btn 
+        icon
+        @click="leave"
+      >
         <v-icon>mdi-trash-can</v-icon>
       </v-btn>
     </v-app-bar>
@@ -82,7 +85,8 @@ export default {
     ...mapActions({
       getChannelById: 'channel/getChannelById',
       getMessagesByChannelId: 'channel/getMessagesByChannelId',
-      read: 'channel/read'
+      read: 'channel/read',
+      leave: 'channel/leave'
     }),
     send() {
       this.$store.dispatch('channel/send', this.newMessage)

@@ -11,3 +11,5 @@ export const getMessagesByChannelId = (channelId) => http.get('/chat/channels/' 
 export const send = (newMessage) => http.post('/chat/channels/' + newMessage.channelId + "/messages", newMessage)
 
 export const read = (channelId, messageId) => http.get(`/chat/channels/${channelId}/messages/${messageId}`)
+
+export const leave = (channelId) => http.delete('/chat/channels/' + channelId)

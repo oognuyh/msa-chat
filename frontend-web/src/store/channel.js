@@ -1,5 +1,6 @@
 import * as chatApi from '@/api/chat'
 import Vue from 'vue'
+import router from '@/router'
 
 export default {
   namespaced: true,
@@ -66,6 +67,19 @@ export default {
        } catch (error) {
          console.error(error)
        }
+    },
+    async leave({ commit, state, rootState }) {
+      try {
+        await chatApi.leave(state.channel.id)
+
+        rootState.channels.channels = rootState.channels.channels.filter((channel) => channel.id !== state.channel.id)
+
+        commit('SET_CHANNEL', {})
+
+        router.replace('/')
+      } catch (error) {
+        console.error(error)
+      }
     }
   }
 }
