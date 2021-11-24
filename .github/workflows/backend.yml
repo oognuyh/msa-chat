@@ -1,0 +1,69 @@
+name: Build and push backends to Docker Hub
+
+on:
+  push:
+    branch:
+      - master
+
+jobs:
+  changes:
+    runs-on:
+      - ubuntu-latest
+    outputs:
+      directories: ${{ steps.filter.outputs.changes }}
+    steps:    
+      - name: Check out repository
+        uses: actions/checkout@v2    
+      - id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            discovery-service: discovery-service/**
+            gateway-service: gateway-service/**
+            image-service: image-service/**
+            user-service: user-service/**
+            friend-service: friend-service/**
+            chat-service: chat-service/**
+            notification-service: notification-service/**
+      - run: echo 'Changed at ${{ steps.filter.outputs.changes }}'
+
+  build:
+    if: ${{ needs.changes.outputs.directories != '[]' && needs.changes.outputs.directories != '' }}
+    name: ${{ matrix.service }}
+    needs:
+      - changes
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.directories) }}
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          cache: 'gradle'
+          java-version: 11
+      
+      - name: Build project 
+        working-directory: ${{ matrix.service }}
+        run: ./gradlew bootJar
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Build And push image to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          context: ${{ matrix.service }}
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/msa-chat-${{ matrix.service }}:latest

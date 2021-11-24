@@ -1,9 +1,4 @@
-FROM gradle:7.2.0-jdk11-alpine AS builder
-WORKDIR /
-COPY build.gradle settings.gradle ./
-COPY src ./src
-RUN gradle bootJar
-
 FROM openjdk:11.0.7-jre-slim-buster
-COPY --from=builder /build/libs/*.jar service.jar
+COPY build/libs/*.jar service.jar
 ENTRYPOINT [ "java", "-Xmx200m", "-jar", "service.jar" ]
+
