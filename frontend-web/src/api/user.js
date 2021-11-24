@@ -7,10 +7,10 @@ export const updatePassword = (request) => http.put(`/users/${Vue.prototype.$key
 
 export const findUsersByQuery = (queryTerm) => http.get('/users?queryTerm=' + queryTerm)
 
-export const online = () => http.put(`/users/${Vue.prototype.$keycloak.subject}/status`, {
+export const online = async () => http.put(`/users/${Vue.prototype.$keycloak.subject}/status`, {
   status: "on"
 })
 
-export const offline = () => http.put(`/users/${Vue.prototype.$keycloak.subject}/status`, {
+export const offline = async () => http.put(`/users/${Vue.prototype.$keycloak.subject}/status`, {
   status: "off"
 })

@@ -11,7 +11,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { online, offline } from '@/api/user'
+import { offline } from '@/api/user'
 import Stomp from 'webstomp-client'
 import SockJS from 'sockjs-client'
 import Vue from 'vue'
@@ -24,35 +24,28 @@ export default {
   },
   mounted() {
     this.connect()
-    document.addEventListener('beforeunload', function(e) {
-      e.preventDefault()
-
+    window.onbeforeunload = () => {
       offline()
-    })
+    }
   },
   methods: {
     ...mapActions('notification', ['notify']),
     connect() {
-      const socket = new SockJS('/ws')
+      const socket = new SockJS(`/ws`)
       const options = {
         debug: false, 
         protocols: Stomp.VERSIONS.supportedProtocols()
       }
-
       this.stompClient = Stomp.over(socket, options)
 
-      const headers = {
+      this.stompClient.connect({
         Authorization: `Bearer ${Vue.prototype.$keycloak.token}`
-      }
-
-      this.stompClient.connect(headers, this.subscribe, (error) => {
-          offline()
+      }, this.subscribe, (error) => {
           console.error(error)
+          offline()
       })
     },
     subscribe() {
-      online()
-
       this.stompClient.subscribe(`/notifications/${Vue.prototype.$keycloak.subject}`, (response) => {
         this.notify(JSON.parse(response.body))
       })
