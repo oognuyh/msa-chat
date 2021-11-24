@@ -26,6 +26,8 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                 .anyRequest()
                 .authenticated()
             .and()
+            .csrf()
+                .disable()
             .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
