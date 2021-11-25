@@ -1,0 +1,50 @@
+server:
+  port: 8082
+
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - TokenRelay
+
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - RewritePath=/api/(?<path>.*),/$\{path}
+
+        - id: image-service
+          uri: lb://image-service
+          predicates:
+            - Path=/api/images/**
+          filters:
+            - RewritePath=/api/(?<path>.*),/$\{path}
+
+        - id: public-image-service
+          uri: lb://image-service
+          predicates:
+            - Path=/images/**
+            - Method=GET
+
+        - id: friend-service
+          uri: lb://friend-service
+          predicates:
+            - Path=/api/friends/**
+          filters:
+            - RewritePath=/api/(?<path>.*),/$\{path}
+
+        - id: chat-service
+          uri: lb://chat-service
+          predicates:
+            - Path=/api/chat/**
+          filters:
+            - RewritePath=/api/(?<path>.*),/$\{path}
+
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**, /ws/**
+          filters:
+            - RewritePath=/api/(?<path>.*),/$\{path}

@@ -20,6 +20,7 @@ jobs:
           filters: |
             discovery-service: discovery-service/**
             gateway-service: gateway-service/**
+            config-service: config-service/**
             image-service: image-service/**
             user-service: user-service/**
             friend-service: friend-service/**
