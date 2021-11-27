@@ -19,6 +19,8 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
     deploy:
       resources:
         limits:
@@ -158,11 +160,23 @@ services:
     container_name: chat-service
     depends_on:
       - user-service
+      - chat-service-db
     volumes: 
     - ./scripts/wait-for-it.sh:/wait.sh
     entrypoint: sh -c "/wait.sh gateway-service:8082 -t 120 && java -Xmx200m -jar service.jar"
     networks:
       - cloud-network
+      - chat-network
+      
+  chat-service-db:
+    image: mongo:latest
+    container_name: chat-service-db
+    expose:
+      - 27017
+    volumes:
+      - ./chat-service/data/db:/data/db  
+    networks:
+      - chat-network
       
   notification-service:
     image: oognuyh/msa-chat-notification-service
@@ -190,5 +204,6 @@ services:
 networks:
   cloud-network:
   auth-network:
+  chat-network:
   image-network:
   kafka-network:

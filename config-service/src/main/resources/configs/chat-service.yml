@@ -9,3 +9,7 @@ spring:
       notification-topic: notification-topic
     consumer:
       user-changed-group-id: user-changed-group-id
+  
+  data:
+    mongodb:
+      uri: mongodb://chat-service-db:27017/chat
