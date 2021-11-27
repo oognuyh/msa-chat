@@ -1,12 +1,12 @@
 package com.oognuyh.chatservice.payload.response;
 
-import com.oognuyh.chatservice.model.User;
-
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserResponse {
     
     private String id;
@@ -20,15 +20,4 @@ public class UserResponse {
     private Boolean isActive;
 
     private String statusMessage;
-
-    public static UserResponse of(User user) {
-        return UserResponse.builder()
-            .id(user.getId())
-            .name(user.getName())
-            .email(user.getEmail())
-            .imageUrl(user.getImageUrl())
-            .isActive(user.getIsActive())
-            .statusMessage(user.getStatusMessage())
-            .build();
-    }
 }
