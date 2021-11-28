@@ -82,7 +82,7 @@ docker-compose up --build
 
 | 사용자 정보 | 로그인 |
 |:---:|:---:|
-|![profile-channel](https://raw.githubusercontent.com/oognuyh/msa-chat/master/images/profile-channel.png)|![login](https://raw.githubusercontent.com/oognuyh/msa-chat/master/images/login.png)|
+|![profile](https://raw.githubusercontent.com/oognuyh/msa-chat/master/images/profile.png)|![login](https://raw.githubusercontent.com/oognuyh/msa-chat/master/images/login.png)|
 
 | 좌측은 회원 정보를 변경할 수 있는 화면 우측은 로그인 화면입니다.
 
