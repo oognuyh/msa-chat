@@ -96,7 +96,11 @@ services:
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: keycloak
     volumes:
-      - ./auth-service/auth-service-db:/var/lib/postgresql/data
+      - ./auth-service/data/db:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     networks:
       - auth-network
       
@@ -154,6 +158,26 @@ services:
     entrypoint: sh -c "/wait.sh gateway-service:8082 -t 120 && java -Xmx200m -jar service.jar"
     networks:
       - cloud-network
+      - friend-network
+      
+  friend-service-db:
+    image: mysql:latest
+    container_name: friend-service-db
+    volumes:
+      - ./friend-service/data/db:/var/lib/mysql
+    expose:
+      - 3306
+    environment:
+      MYSQL_DATABASE: friend
+      MYSQL_USER: friend
+      MYSQL_PASSWORD: friend
+      MYSQL_ROOT_PASSWORD: root
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - friend-network
   
   chat-service:
     image: oognuyh/msa-chat-chat-service
@@ -174,7 +198,11 @@ services:
     expose:
       - 27017
     volumes:
-      - ./chat-service/data/db:/data/db  
+      - ./chat-service/data/db:/data/db
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     networks:
       - chat-network
       
@@ -205,5 +233,6 @@ networks:
   cloud-network:
   auth-network:
   chat-network:
+  friend-network:
   image-network:
   kafka-network:

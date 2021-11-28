@@ -9,3 +9,14 @@ spring:
       user-changed-topic: user-changed-topic
     consumer:
       user-changed-group-id: user-changed-group-id-2
+
+  datasource:
+    url: jdbc:mysql://friend-service-db:3306/friend?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=true
+    username: friend
+    password: friend
+    driver-class: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect

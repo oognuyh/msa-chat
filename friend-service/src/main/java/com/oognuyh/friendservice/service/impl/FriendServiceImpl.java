@@ -21,6 +21,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,7 @@ public class FriendServiceImpl implements FriendService {
     @Value("${spring.kafka.template.notification-topic}")
     private String NOTIFICATION_TOPIC;
 
+    @Transactional(readOnly = true)
     public List<FriendResponse> findFriendsByUserId(String userId) {
         return friendRepository.findFriendsByUserId(userId).stream()
             .map(FriendResponse::of)
@@ -44,6 +46,7 @@ public class FriendServiceImpl implements FriendService {
             .collect(Collectors.toList());
     }
 
+    @Transactional
     public FriendResponse addNewFriend(String userId, AddingNewFriendRequest request) {        
         return FriendResponse.of(
                 friendRepository.save(Friend.builder()
@@ -53,16 +56,18 @@ public class FriendServiceImpl implements FriendService {
             .setDetails(userRepository.findUserById(request.getFriendId()));
     }
 
+    @Transactional
     public void deleteFriendByIdAndUserId(String id, String userId) {
         friendRepository.deleteFriendByIdAndUserId(id, userId);
     }
 
+    @Transactional(readOnly = true)
     @KafkaListener(
         topics = "${spring.kafka.template.user-changed-topic}", 
         groupId = "${spring.kafka.consumer.user-changed-group-id}",
         containerFactory = "userChangedListenerFactory"
     )
-    private void onUserChanged(@Payload String payload) throws JsonMappingException, JsonProcessingException {
+    void onUserChanged(@Payload String payload) throws JsonMappingException, JsonProcessingException {
         UserChangedEvent userChangedEvent = objectMapper.readValue(payload, UserChangedEvent.class);
 
         log.info("event: {}", userChangedEvent);
