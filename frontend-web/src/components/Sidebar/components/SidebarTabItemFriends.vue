@@ -115,8 +115,7 @@ export default {
   methods: {
     ...mapActions({
       getFriendsByUserId: 'friends/getFriendsByUserId',
-      deleteFriendById: 'friends/deleteFriendById',
-      getChannelBetweenUserIds: 'channels/getChannelBetweenUserIds'
+      deleteFriendById: 'friends/deleteFriendById'
     }),
     search(queryTerm) {
       this.isSearching = true
@@ -134,6 +133,11 @@ export default {
     addNewFriend(id) {
       this.$store.dispatch('friends/addNewFriend', id)
       
+      this.isSearching = false
+    },
+    getChannelBetweenUserIds(userId) {
+      this.$store.dispatch('channels/getChannelBetweenUserIds', userId)
+
       this.isSearching = false
     }
   }

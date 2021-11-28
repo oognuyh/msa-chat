@@ -37,10 +37,14 @@ export default {
         dispatch('friends/getFriendsByUserId', null, { root: true })
       } else if (event.type === 'USER_CHANGED_IN_CHANNELS') {
         dispatch('channels/getChannelsByUserId', null, { root: true })
-        if (rootState.channel.channel && 
-            rootState.channel.channel.participants
-              .find((participant) => participant.id === event.senderId)) {
-          dispatch('channel/getChannelById', rootState.channel.channel.id, { root: true })
+
+        if (rootState.channel.channel.id) {
+          const currentChannel = rootState.channel.channel
+          
+          if ((event.channelId && currentChannel.id === event.channelId) || 
+              currentChannel.participants.find((participant) => participant.id === event.senderId)) {
+            dispatch('channel/getChannelById', rootState.channel.channel.id, { root: true })
+          }
         }
       }
     } 

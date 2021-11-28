@@ -12,6 +12,17 @@
             <avatar v-else-if="channel.type === 'GROUP'" group />
         </template>
         <span class="ml-4">{{ channel.name }}</span>
+        <v-chip
+          v-if="channel.type === 'GROUP'"
+          class="ml-2"
+          outlined
+          small
+        >
+          <v-icon small left>
+            mdi-account-outline
+          </v-icon>
+          {{ channel.participants.length || 0 }}
+        </v-chip>
       </v-toolbar-title>
 
       <v-spacer />

@@ -37,7 +37,7 @@ export default {
     async getChannelsByUserId({ commit }) {
       try {
         const { data } = await chatApi.getChannelsByUserId()
-        console.log(data)
+        
         commit('SET_CHANNELS', data)
       } catch (error) {
         console.error(error)
@@ -48,6 +48,28 @@ export default {
         const { data } = await chatApi.getChannelBetweenUserIds(userId)
 
         commit('ADD_NEW_CHANNEL', data)
+
+        router.push('/channels/' + data.id).catch(() => {})
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    async createNewGroupChannel({ commit }, name) {
+      try {
+        const { data } = await chatApi.createNewGroupChannel(name) 
+
+        commit('ADD_NEW_CHANNEL', data)
+
+        router.push('/channels/' + data.id).catch(() => {})
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    async join({ commit }, channelId) {
+      try {
+        const { data } = await chatApi.join(channelId) 
+
+        commit('ADD_NEW_CHANEL', data)
 
         router.push('/channels/' + data.id).catch(() => {})
       } catch (error) {

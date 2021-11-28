@@ -52,7 +52,9 @@ public class Channel {
     }
 
     public Channel join(String userId) {
-        this.participantIds.add(userId);
+        if (!this.participantIds.contains(userId)) {
+            this.participantIds.add(userId);
+        }
 
         return this;
     }

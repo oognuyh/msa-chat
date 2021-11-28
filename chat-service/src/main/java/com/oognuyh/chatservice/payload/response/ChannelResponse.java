@@ -36,6 +36,15 @@ public class ChannelResponse {
 
     private List<MessageResponse> messages;
 
+    public static ChannelResponse of(Channel channel, List<UserResponse> participants) {
+        return ChannelResponse.builder()
+            .id(channel.getId())
+            .type(channel.getType())
+            .name(channel.getName())             
+            .participants(participants)
+            .build();
+    }
+
     public static ChannelResponse of(Channel channel, String userId, List<UserResponse> participants) {
         List<UserResponse> recipients = participants.stream()
             .filter(participant -> !participant.getId().equals(userId))

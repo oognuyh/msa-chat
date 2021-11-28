@@ -13,3 +13,11 @@ export const send = (newMessage) => http.post('/chat/channels/' + newMessage.cha
 export const read = (channelId, messageId) => http.get(`/chat/channels/${channelId}/messages/${messageId}`)
 
 export const leave = (channelId) => http.delete('/chat/channels/' + channelId)
+
+export const findChannelsByQuery = (queryTerm) => http.get(`/chat/channels/search?queryTerm=${queryTerm}`)
+
+export const createNewGroupChannel = (name) => http.post('/chat/channels', {
+    name: name
+})
+
+export const join = (channelId) => http.post(`/chat/channels/${channelId}`)

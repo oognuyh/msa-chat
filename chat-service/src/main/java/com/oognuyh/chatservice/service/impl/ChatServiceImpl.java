@@ -13,6 +13,7 @@ import com.oognuyh.chatservice.model.Message;
 import com.oognuyh.chatservice.payload.event.NotificationEvent;
 import com.oognuyh.chatservice.payload.event.NotificationEvent.NotificationType;
 import com.oognuyh.chatservice.payload.event.UserChangedEvent;
+import com.oognuyh.chatservice.payload.request.NewGroupChannelRequest;
 import com.oognuyh.chatservice.payload.request.NewMessageRequest;
 import com.oognuyh.chatservice.payload.response.ChannelResponse;
 import com.oognuyh.chatservice.payload.response.MessageResponse;
@@ -71,6 +72,14 @@ public class ChatServiceImpl implements ChatService {
                 .map(MessageResponse::of)
                 .collect(Collectors.toList())))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @Override
+    public List<ChannelResponse> search(String queryTerm) {
+        return channelRepository.findChannelsByTypeAndNameContainingIgnoreCase(Type.GROUP, queryTerm).stream()
+            .peek(channel -> log.info("match with queryTerm({}): {}", queryTerm, channel))
+            .map(channel -> ChannelResponse.of(channel, getParticipants(channel.getParticipantIds())))
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -144,32 +153,62 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public ChannelResponse join(String userId, String channelId) {
+    public ChannelResponse createNewGroupChannel(String userId, NewGroupChannelRequest request) {
+        Channel newChannel = channelRepository.save(Channel.builder()
+            .name(request.getName())
+            .participantIds(List.of(userId))
+            .type(Type.GROUP)
+            .build());
+        
+        return ChannelResponse.of(newChannel, userId, getParticipants(newChannel.getParticipantIds()));
+    }
+
+    @Override
+    public ChannelResponse join(String userId, String channelId) throws JsonProcessingException {
         Channel channel = channelRepository.save(
             channelRepository.findById(channelId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
                 .join(userId)
         );
         
-        // kafkaTemplate.send(NOTIFICATION_TOPIC, NotificationEvent);
+        kafkaTemplate.send(
+            NOTIFICATION_TOPIC, 
+            objectMapper.writeValueAsString(NotificationEvent.builder()
+                .type(NotificationType.USER_CHANGED_IN_CHANNELS)
+                .senderId(userId)
+                .recipientIds(channel.getParticipantIds())
+                .channelId(channelId)
+                .build())
+        );
 
         return ChannelResponse.of(channel, userId, getParticipants(channel.getParticipantIds()));
     }
 
     @Override
-    public void leave(String userId, String channelId) {
-        channelRepository.save(
+    public void leave(String userId, String channelId) throws JsonProcessingException {
+        Channel channelLeft = channelRepository.save(
             channelRepository.findById(channelId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
                 .leave(userId)
         );
         
-        // kafkaTemplate.send("notification-topic", NotificationEvent);
+        if (channelLeft.getParticipantIds().size() > 0) {
+            NotificationEvent notificationEvent = NotificationEvent.builder()
+                .type(NotificationType.USER_CHANGED_IN_CHANNELS)
+                .senderId(userId)
+                .recipientIds(channelLeft.getParticipantIds())
+                .build();
+
+            kafkaTemplate.send(NOTIFICATION_TOPIC, objectMapper.writeValueAsString(notificationEvent));
+        } else {
+            channelRepository.deleteById(channelLeft.getId());
+        }
     }
 
     private List<UserResponse> getParticipants(List<String> participantIds) {
         return participantIds.stream()
             .map(userRepository::findUserById)
+            .peek(user -> log.info("matched user: {}", user))
             .collect(Collectors.toList());
     }
 

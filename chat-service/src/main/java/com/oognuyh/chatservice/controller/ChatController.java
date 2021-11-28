@@ -3,6 +3,7 @@ package com.oognuyh.chatservice.controller;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.oognuyh.chatservice.payload.request.NewGroupChannelRequest;
 import com.oognuyh.chatservice.payload.request.NewMessageRequest;
 import com.oognuyh.chatservice.payload.response.ChannelResponse;
 import com.oognuyh.chatservice.payload.response.MessageResponse;
@@ -20,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/chat")
@@ -32,6 +35,17 @@ public class ChatController {
         @CurrentUserId String currentUserId
     ) {
         return ResponseEntity.ok().body(chatService.findChannelsByUserId(currentUserId));
+    }
+
+    @GetMapping("/channels/search")
+    public ResponseEntity<List<ChannelResponse>> search(
+        @RequestParam(defaultValue = "", required = false) String queryTerm
+    ) {
+        List<ChannelResponse> channelResponses = chatService.search(queryTerm);
+
+        log.info("search result: {}", channelResponses);
+
+        return ResponseEntity.ok().body(channelResponses);
     }
 
     @GetMapping("/channels/{id}")
@@ -58,11 +72,19 @@ public class ChatController {
         return ResponseEntity.ok().body(chatService.findMessagesByChannelId(id, currentUserId));
     }
 
+    @PostMapping("/channels")
+    public ResponseEntity<ChannelResponse> createGroupChannel(
+        @CurrentUserId String currentUserId,
+        @RequestBody NewGroupChannelRequest request
+    ) {
+        return ResponseEntity.ok().body(chatService.createNewGroupChannel(currentUserId, request));
+    }
+
     @PostMapping("/channels/{id}")
     public ResponseEntity<ChannelResponse> join(
         @CurrentUserId String currentUserId,
         @PathVariable("id") String id
-    ) {
+    ) throws JsonProcessingException {
         return ResponseEntity.ok().body(chatService.join(currentUserId, id));
     }
 
@@ -86,7 +108,7 @@ public class ChatController {
     public ResponseEntity<Void> leave(
         @CurrentUserId String currentUserId,
         @PathVariable("id") String id
-    ) {
+    ) throws JsonProcessingException {
         chatService.leave(currentUserId, id);
 
         return ResponseEntity.ok().build();

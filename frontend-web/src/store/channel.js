@@ -5,7 +5,9 @@ import router from '@/router'
 export default {
   namespaced: true,
   state: {
-    channel: {}
+    channel: {
+      participants: []
+    }
   },
   getters: {
     getChannel(state) {

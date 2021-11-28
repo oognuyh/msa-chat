@@ -40,7 +40,7 @@ export default {
     }
   },
   mounted() {
-    fetch('https://raw.githubusercontent.com/oognuyh/board-spring/master/README.md')
+    fetch('https://raw.githubusercontent.com/oognuyh/msa-chat/master/README.md')
       .then(response => response.text())
       .then(docs => this.docs = docs)
   }
