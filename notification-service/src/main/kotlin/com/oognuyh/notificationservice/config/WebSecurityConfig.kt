@@ -10,18 +10,25 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
+import javax.annotation.PostConstruct
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(jsr250Enabled = true)
 class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
+    @PostConstruct
+    fun enableAuthenticationContextOnSpawnedThreads() {
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+    }
+
     override fun configure(http: HttpSecurity) {
         http
             .authorizeRequests()
-                .antMatchers("/ws/**")
+                .antMatchers("/ws/**", "/actuator/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
