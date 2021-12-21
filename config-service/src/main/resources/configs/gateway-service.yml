@@ -1,6 +1,3 @@
-server:
-  port: 8082
-
 spring:
   cloud:
     gateway:
@@ -11,16 +8,16 @@ spring:
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/api/users/**
+            - Path=/api/user-service/**
           filters:
-            - RewritePath=/api/(?<path>.*),/$\{path}
+            - RewritePath=/api/user-service/(?<path>.*),/$\{path}
 
         - id: image-service
           uri: lb://image-service
           predicates:
-            - Path=/api/images/**
+            - Path=/api/image-service/**
           filters:
-            - RewritePath=/api/(?<path>.*),/$\{path}
+            - RewritePath=/api/image-service/(?<path>.*),/$\{path}
 
         - id: public-image-service
           uri: lb://image-service
@@ -31,20 +28,20 @@ spring:
         - id: friend-service
           uri: lb://friend-service
           predicates:
-            - Path=/api/friends/**
+            - Path=/api/friend-service/**
           filters:
-            - RewritePath=/api/(?<path>.*),/$\{path}
+            - RewritePath=/api/friend-service/(?<path>.*),/$\{path}
 
         - id: chat-service
           uri: lb://chat-service
           predicates:
-            - Path=/api/chat/**
+            - Path=/api/chat-service/**, 
           filters:
-            - RewritePath=/api/(?<path>.*),/$\{path}
+            - RewritePath=/api/chat-service/(?<path>.*),/$\{path}
 
         - id: notification-service
           uri: lb://notification-service
           predicates:
-            - Path=/api/notifications/**, /ws/**
+            - Path=/api/notification-service/**, /ws/**
           filters:
-            - RewritePath=/api/(?<path>.*),/$\{path}
+            - RewritePath=/api/notification-service/(?<path>.*),/$\{path}

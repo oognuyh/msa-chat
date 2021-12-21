@@ -1,4 +1,39 @@
+eureka:
+  client:
+    service-url:
+      prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+--- 
+
 spring:
+  config:
+    activate:
+      on-profile: dev
+      
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/auth/realms/chat/protocol/openid-connect/certs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+
+--- 
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+      
   security:
     oauth2:
       resourceserver:
@@ -9,6 +44,3 @@ eureka:
   client:
     service-url:
       defaultZone: http://discovery-service:8081/eureka
-
-  instance:
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}

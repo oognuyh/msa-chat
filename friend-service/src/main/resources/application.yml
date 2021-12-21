@@ -1,0 +1,66 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: friend-service
+
+  profiles:
+    active: prod
+
+  cloud:
+    config:
+      username: config
+      password: config
+
+  sleuth:
+    circuitbreaker:
+      enabled: false
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: configserver:http://localhost:8083
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+    import: configserver:http://config-service:8083
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers:http://localhost:9092}
+    template:
+      notification-topic: notification-topic
+      user-changed-topic: user-changed-topic
+    consumer:
+      user-changed-group-id: user-changed-group-id-2
+
+  cloud:
+    config:
+      enabled: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/auth/realms/chat/protocol/openid-connect/certs
+
+  sleuth:
+    enabled: false
+
+eureka:
+  client:
+    enabled: false

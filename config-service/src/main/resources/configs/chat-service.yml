@@ -1,15 +1,11 @@
-server:
-  port: 0
-
 spring:
   kafka:
-    bootstrap-servers: http://kafka:9092
     template:
       user-changed-topic: user-changed-topic
       notification-topic: notification-topic
     consumer:
       user-changed-group-id: user-changed-group-id
-  
-  data:
-    mongodb:
-      uri: mongodb://chat-service-db:27017/chat
+
+  sleuth:
+    sampler:
+      probability: 1.0

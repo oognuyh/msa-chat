@@ -1,17 +1,16 @@
-server:
-  port: 0
-
 spring:
   kafka:
-    bootstrap-servers: http://kafka:9092
     template:
       avatar-changed-topic: avatar-changed-topic
       user-changed-topic: user-changed-topic
     consumer:
       avatar-changed-group-id: avatar-changed-group-id
 
+  sleuth:
+    sampler:
+      probability: 1.0
+      
 keycloak:
-  auth-server-url: http://auth-service:8080/auth
   master-realm: master
   realm: chat
   client-id: admin-cli

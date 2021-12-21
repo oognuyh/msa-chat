@@ -1,0 +1,9 @@
+spring:
+  kafka:
+    bootstrap-servers: http://kafka:9092
+  
+  zipkin:
+    base-url: http://zipkin:9411
+
+keycloak:
+  auth-server-url: http://auth-service:8080/auth

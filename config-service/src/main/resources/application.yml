@@ -16,4 +16,5 @@ spring:
 
   security:
     user:
+      name: config
       password: config

@@ -1,0 +1,41 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: image-service
+
+  profiles:
+    active: prod
+
+  cloud:
+    config:
+      username: config
+      password: config
+
+  sleuth:
+    circuitbreaker:
+      enabled: false
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: configserver:http://localhost:8083
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+    import: configserver:http://config-service:8083
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test

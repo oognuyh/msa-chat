@@ -1,0 +1,41 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: discovery-service
+
+  profiles:
+    active: prod
+
+  cloud:
+    config:
+      username: config
+      password: config
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: configserver:http://localhost:8083
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+    import: configserver:http://config-service:8083
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  cloud:
+    config:
+      enabled: false

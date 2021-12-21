@@ -1,0 +1,9 @@
+spring:
+  kafka:
+    bootstrap-servers: http://kafka:9092
+
+  datasource:
+    url: jdbc:mysql://friend-service-db:3306/friend?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=true
+
+  zipkin:
+    base-url: http://zipkin:9411

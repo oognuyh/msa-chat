@@ -1,9 +1,10 @@
-server:
-  port: 0
-
 spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+
   kafka:
-    bootstrap-servers: http://kafka:9092
     template:
       notification-topic: notification-topic
       user-changed-topic: user-changed-topic
@@ -11,12 +12,10 @@ spring:
       user-changed-group-id: user-changed-group-id-2
 
   datasource:
-    url: jdbc:mysql://friend-service-db:3306/friend?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=true
     username: friend
     password: friend
     driver-class: com.mysql.cj.jdbc.Driver
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+  sleuth:
+    sampler:
+      probability: 1.0

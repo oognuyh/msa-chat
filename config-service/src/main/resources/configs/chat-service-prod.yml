@@ -1,0 +1,10 @@
+spring:
+  kafka:
+    bootstrap-servers: http://kafka:9092
+  
+  data:
+    mongodb:
+      uri: mongodb://chat-service-db:27017/chat
+
+  zipkin:
+    base-url: http://zipkin:9411

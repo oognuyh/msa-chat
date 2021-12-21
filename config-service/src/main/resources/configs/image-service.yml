@@ -1,6 +1,3 @@
-server:
-  port: 0
-
 spring:
   servlet:
     multipart:
@@ -10,15 +7,17 @@ spring:
       max-request-size: 10MB
 
   kafka:
-    bootstrap-servers: http://kafka:9092
     template:
       avatar-changed-topic: avatar-changed-topic
+
+  sleuth:
+    sampler:
+      probability: 1.0
 
 eureka:
   gateway-uri: http://localhost:8082
 
 minio:
-  endpoint: http://minio:9000
   access-key: minio
   secret-key: miniopwd
   bucket: public
