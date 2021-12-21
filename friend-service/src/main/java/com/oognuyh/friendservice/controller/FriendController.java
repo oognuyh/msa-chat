@@ -7,6 +7,7 @@ import com.oognuyh.friendservice.payload.response.FriendResponse;
 import com.oognuyh.friendservice.service.FriendService;
 import com.oognuyh.friendservice.util.annotation.CurrentUserId;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/friends")
+@RequestMapping("/v1/friends")
 public class FriendController {
     private final FriendService friendService;
 
@@ -28,6 +31,8 @@ public class FriendController {
     public ResponseEntity<List<FriendResponse>> findFriendsByUserId(
         @CurrentUserId String currentUserId
     ) {
+        log.info("Find friends of user({})", currentUserId);
+
         return ResponseEntity.ok().body(friendService.findFriendsByUserId(currentUserId));
     }
 
@@ -35,8 +40,10 @@ public class FriendController {
     public ResponseEntity<FriendResponse> addNewFriend(
         @CurrentUserId String currentUserId,
         @RequestBody AddingNewFriendRequest request
-    ) {        
-        return ResponseEntity.ok().body(friendService.addNewFriend(currentUserId, request));
+    ) {
+        log.info("User({}) adds new friend({})", currentUserId, request.getFriendId());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(friendService.addNewFriend(currentUserId, request));
     }
 
     @DeleteMapping("/{id}")
@@ -44,6 +51,8 @@ public class FriendController {
         @CurrentUserId String currentUserId,
         @PathVariable("id") String id
     ) {
+        log.info("User({}) deletes friend({})", currentUserId, id);
+
         friendService.deleteFriendByIdAndUserId(id, currentUserId);
 
         return ResponseEntity.ok().build();

@@ -57,7 +57,7 @@ public class KeycloakUserServiceImpl implements UserService {
     public List<UserResponse> findUsersByQuery(String queryTerm) {
         return getUsersResource().search(queryTerm, 0, null, false).stream()
             .map(UserResponse::of)
-            .peek(System.out::println)
+            .peek(user -> log.info("Successfully found user({}) whose email or name matches {}", user, queryTerm))
             .collect(Collectors.toList());
     }
     
@@ -86,7 +86,12 @@ public class KeycloakUserServiceImpl implements UserService {
 
         // Update user
         userResource.update(userRepresentation);
+
+        log.info("Successfully changed user({}) details", userId);
+
         kafkaTemplate.send(USER_CHANGED_TOPIC, objectMapper.writeValueAsString(new UserChangedEvent(userId)));
+
+        log.info("Notify other services that user({}) changed", userId);
 
         // Return the updated
         return UserResponse.of(getUsersResource().get(userId).toRepresentation());
@@ -106,6 +111,8 @@ public class KeycloakUserServiceImpl implements UserService {
         
         // Update user
         userResource.update(userRepresentation);
+
+        log.info("Successfully changed user({}) password", userId);
     }
 
     @Override
@@ -117,8 +124,12 @@ public class KeycloakUserServiceImpl implements UserService {
         userRepresentation.singleAttribute("status", request.getStatus());
 
         userResource.update(userRepresentation);
+
+        log.info("Successfully changed user({}) status", userId);
         
         kafkaTemplate.send(USER_CHANGED_TOPIC, objectMapper.writeValueAsString(new UserChangedEvent(userId)));
+
+        log.info("Notify other services that user({}) changed", userId);
     }
 
     @KafkaListener(
@@ -129,7 +140,7 @@ public class KeycloakUserServiceImpl implements UserService {
     private void onAvatarChanged(@Payload String payload) throws JsonMappingException, JsonProcessingException {
         AvatarChangedEvent event = objectMapper.readValue(payload, AvatarChangedEvent.class);
 
-        log.info("event: {}", event);
+        log.info("Receive avatar changed event with {} and {}", event.getUserId(), event.getImageUrl());
 
         UserResource userResource = getUsersResource().get(event.getUserId());
         UserRepresentation userRepresentation = userResource.toRepresentation();
@@ -137,5 +148,7 @@ public class KeycloakUserServiceImpl implements UserService {
         userRepresentation.singleAttribute("imageUrl", event.getImageUrl());
 
         userResource.update(userRepresentation);
+
+        log.info("Successfully changed user image url to {}", event.getImageUrl());
     }
 }

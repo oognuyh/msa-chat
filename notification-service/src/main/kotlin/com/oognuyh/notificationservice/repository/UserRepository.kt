@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 @FeignClient(name = "user-service")
 interface UserRepository {
 
-    @PutMapping("/users/{id}/status")
+    @PutMapping("/v1/users/{id}/status")
     fun updateStatus(
         @RequestHeader(HttpHeaders.AUTHORIZATION) authToken: String,
         @PathVariable("id") id: String,

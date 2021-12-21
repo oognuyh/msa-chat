@@ -1,6 +1,7 @@
 package com.oognuyh.notificationservice.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.oognuyh.notificationservice.logger
 import com.oognuyh.notificationservice.payload.request.StatusUpdateRequest
 import com.oognuyh.notificationservice.repository.UserRepository
 import org.springframework.context.annotation.Configuration
@@ -34,6 +35,7 @@ class WebSocketConfig(
     private val userRepository: UserRepository,
     private val jwtDecoder: JwtDecoder
 ) : WebSocketMessageBrokerConfigurer {
+    private val logger = logger()
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry
@@ -63,8 +65,6 @@ class WebSocketConfig(
             override fun preSend(message: Message<*>, channel: MessageChannel): Message<*> {
                 val accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
 
-                println(accessor)
-
                 when (accessor?.command) {
                     StompCommand.CONNECT -> {
                         val authToken = accessor.getFirstNativeHeader(HttpHeaders.AUTHORIZATION)
@@ -73,6 +73,9 @@ class WebSocketConfig(
                         val jwtConverter = JwtAuthenticationConverter()
 
                         accessor.user = jwtConverter.convert(jwt)
+
+                        logger.info("Successfully set auth token to user({})", jwt.subject)
+                        logger.info("Request to change user({}) status to on", jwt.subject)
 
                         userRepository.updateStatus(authToken, jwt.subject, StatusUpdateRequest(("on")))
                     }

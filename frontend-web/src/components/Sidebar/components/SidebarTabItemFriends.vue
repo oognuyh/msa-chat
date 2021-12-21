@@ -74,6 +74,7 @@
           :key="friend.id"
           link
           @click="getChannelBetweenUserIds(friend.id)"
+          :disabled="!friend.id"
         >
           <v-list-item-avatar tile>
             <avatar :user="friend" />

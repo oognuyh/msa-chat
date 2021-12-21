@@ -19,7 +19,7 @@ public class WebSecurityConfig {
             .csrf()
                 .disable()
             .authorizeExchange(exchange -> exchange
-                .pathMatchers("/ws/**").permitAll()
+                .pathMatchers("/ws/**", "/actuator/**", "/api/*/actuator/**").permitAll()
                 .pathMatchers(HttpMethod.GET, "/images/avatars/**").permitAll()
                 .anyExchange().authenticated())
             .oauth2ResourceServer()

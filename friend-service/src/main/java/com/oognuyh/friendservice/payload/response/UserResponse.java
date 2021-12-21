@@ -20,4 +20,8 @@ public class UserResponse {
     private Boolean isActive;
 
     private String statusMessage;
+
+    public static UserResponse anonymous() {
+        return new UserResponse(null, "anonymous", null, null, null, "Failed to load user details");
+    }
 }

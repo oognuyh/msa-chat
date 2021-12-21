@@ -22,10 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users")
+@RequestMapping("/v1/users")
 public class UserController {
     private final UserService userService;
 
@@ -33,14 +35,18 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> findUsersByQuery(
         @RequestParam(name = "queryTerm", required = false) String queryTerm
     ) {
-        return ResponseEntity.ok(userService.findUsersByQuery(queryTerm));
+        log.info("Find users with queryTerm({})", queryTerm);
+
+        return new ResponseEntity<>(userService.findUsersByQuery(queryTerm), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> findUserById(
         @PathVariable String id
     ) {
-        return ResponseEntity.ok(userService.findById(id));
+        log.info("Find user with id {}", id);
+
+        return new ResponseEntity<>(userService.findById(id), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
@@ -51,7 +57,9 @@ public class UserController {
     ) throws JsonProcessingException {
         if (!currentUserId.equals(id)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        return ResponseEntity.ok(userService.updateDetails(id, request));
+        log.info("Update user({}) details with {}", id, request);
+
+        return new ResponseEntity<>(userService.updateDetails(id, request), HttpStatus.OK);
     }
 
     @PutMapping("/{id}/password")
@@ -62,9 +70,11 @@ public class UserController {
     ) {
         if (!currentUserId.equals(id)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
+        log.info("Update user({}) password", id);
+
         userService.updatePassword(id, request);
 
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{id}/status")
@@ -75,8 +85,10 @@ public class UserController {
     ) throws JsonProcessingException {
         if (!currentUserId.equals(id)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
+        log.info("Update user({}) status to {}", id, request.getStatus());
+
         userService.updateStatus(id, request);
 
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

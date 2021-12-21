@@ -24,6 +24,7 @@ import com.oognuyh.chatservice.repository.UserRepository;
 import com.oognuyh.chatservice.service.ChatService;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreaker;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -44,7 +45,9 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private final Resilience4JCircuitBreaker circuitBreaker;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${spring.kafka.template.notification-topic}")
     private String NOTIFICATION_TOPIC;
@@ -66,6 +69,8 @@ public class ChatServiceImpl implements ChatService {
                 .collect(Collectors.toList())
         );
 
+        log.info("Successfully changed unread messages to read messages", userId);
+
         return channelRepository.findById(channelId)
             .map(channel -> ChannelResponse.of(channel, userId, getParticipants(channel.getParticipantIds())))
             .map(channelResponse -> channelResponse.setMessages(messageRepository.findMessagesByChannelId(channelId).stream()
@@ -77,7 +82,6 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<ChannelResponse> search(String queryTerm) {
         return channelRepository.findChannelsByTypeAndNameContainingIgnoreCase(Type.GROUP, queryTerm).stream()
-            .peek(channel -> log.info("match with queryTerm({}): {}", queryTerm, channel))
             .map(channel -> ChannelResponse.of(channel, getParticipants(channel.getParticipantIds())))
             .collect(Collectors.toList());
     }
@@ -126,8 +130,12 @@ public class ChatServiceImpl implements ChatService {
                 .updateLastMessage(newMessage)
         );
         
+        log.info("Successfully updated channel({})", request.getChannelId());
+
         Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String senderName = jwt.getClaimAsString("name");
+
+        log.info("Notify recipients({}) of new message", newMessage.getUnreaderIds());
 
         kafkaTemplate.send(
             NOTIFICATION_TOPIC, 
@@ -159,6 +167,8 @@ public class ChatServiceImpl implements ChatService {
             .participantIds(List.of(userId))
             .type(Type.GROUP)
             .build());
+
+        log.info("Successfully created new channel with name {}", newChannel.getName());
         
         return ChannelResponse.of(newChannel, userId, getParticipants(newChannel.getParticipantIds()));
     }
@@ -170,6 +180,8 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
                 .join(userId)
         );
+
+        log.info("Notify participants of new participant", channel.getParticipantIds());
         
         kafkaTemplate.send(
             NOTIFICATION_TOPIC, 
@@ -192,6 +204,8 @@ public class ChatServiceImpl implements ChatService {
                 .leave(userId)
         );
         
+        log.info("User({}) successfully left channel({})", userId, channelId);
+        
         if (channelLeft.getParticipantIds().size() > 0) {
             NotificationEvent notificationEvent = NotificationEvent.builder()
                 .type(NotificationType.USER_CHANGED_IN_CHANNELS)
@@ -200,15 +214,22 @@ public class ChatServiceImpl implements ChatService {
                 .build();
 
             kafkaTemplate.send(NOTIFICATION_TOPIC, objectMapper.writeValueAsString(notificationEvent));
+
+            log.info("Notify participants({}) user({}) left", channelLeft.getParticipantIds(), userId);
         } else {
             channelRepository.deleteById(channelLeft.getId());
+
+            log.info("Successfully empty channel({}) removed", channelId);
         }
     }
 
     private List<UserResponse> getParticipants(List<String> participantIds) {
         return participantIds.stream()
-            .map(userRepository::findUserById)
-            .peek(user -> log.info("matched user: {}", user))
+            .map(participantId -> circuitBreaker.run(() -> userRepository.findUserById(participantId), throwable -> {
+                log.error("Failed to load user({}) details because {}", participantId, throwable.getMessage());
+
+                return UserResponse.anonymous();
+            }))
             .collect(Collectors.toList());
     }
 
@@ -219,6 +240,8 @@ public class ChatServiceImpl implements ChatService {
     )
     private void onUserChanged(@Payload String payload) throws JsonMappingException, JsonProcessingException {
         UserChangedEvent userChangedEvent = objectMapper.readValue(payload, UserChangedEvent.class);
+
+        log.info("Receive user changed event with user id ({})", userChangedEvent.getUserId());
 
         List<String> recipientIds = channelRepository.findChannelsByParticipantIds(userChangedEvent.getUserId()).stream()
             .flatMap(channel -> channel.getParticipantIds().stream())
@@ -232,6 +255,14 @@ public class ChatServiceImpl implements ChatService {
             .recipientIds(recipientIds)
             .build();
 
-        kafkaTemplate.send(NOTIFICATION_TOPIC, objectMapper.writeValueAsString(notificationEvent));
+        log.info("Notify friends({}) that user({}) has changed", notificationEvent.getRecipientIds(), notificationEvent.getSenderId());
+
+        if (recipientIds.size() > 0) {
+            kafkaTemplate.send(NOTIFICATION_TOPIC, objectMapper.writeValueAsString(notificationEvent));
+
+            log.info("Successfully notified participants({}) of {}", notificationEvent.getRecipientIds(), notificationEvent.getType());
+        } else {
+            log.info("There is no recipient");
+        }
     }
 }

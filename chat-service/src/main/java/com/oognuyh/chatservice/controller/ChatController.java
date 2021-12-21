@@ -10,6 +10,7 @@ import com.oognuyh.chatservice.payload.response.MessageResponse;
 import com.oognuyh.chatservice.service.ChatService;
 import com.oognuyh.chatservice.util.annotation.CurrentUserId;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,89 +27,106 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/chat")
+@RequestMapping("/v1/channels")
 public class ChatController {
     private final ChatService chatService;
 
-    @GetMapping("/channels")
+    @GetMapping
     public ResponseEntity<List<ChannelResponse>> findChannelsByUserId(
         @CurrentUserId String currentUserId
     ) {
+        log.info("Find channels of user({}) ", currentUserId);
+
         return ResponseEntity.ok().body(chatService.findChannelsByUserId(currentUserId));
     }
 
-    @GetMapping("/channels/search")
+    @GetMapping("/search")
     public ResponseEntity<List<ChannelResponse>> search(
         @RequestParam(defaultValue = "", required = false) String queryTerm
     ) {
-        List<ChannelResponse> channelResponses = chatService.search(queryTerm);
+        log.info("Search channels by {}", queryTerm);        
 
-        log.info("search result: {}", channelResponses);
-
-        return ResponseEntity.ok().body(channelResponses);
+        return ResponseEntity.ok().body(chatService.search(queryTerm));
     }
 
-    @GetMapping("/channels/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ChannelResponse> findChannelById(
         @CurrentUserId String currentUserId,
         @PathVariable("id") String id
     ) {
+        log.info("Find channel({}) of user({})", id, currentUserId);
+
         return ResponseEntity.ok().body(chatService.findChannelById(id, currentUserId));
     }
 
-    @GetMapping("/channels/between")
+    @GetMapping("/between")
     public ResponseEntity<ChannelResponse> findChannelBetweenUserIds(
         @CurrentUserId String currentUserId,
         @RequestParam("userId") String userId
     ) {
+        log.info("Find channel between Users({}, {})", currentUserId, userId);
+
         return ResponseEntity.ok().body(chatService.findChannelBetweenUserIds(currentUserId, userId));
     }
 
-    @GetMapping("/channels/{id}/messages")
+    @GetMapping("/{id}/messages")
     public ResponseEntity<List<MessageResponse>> findMessagesByChannelId(
         @CurrentUserId String currentUserId,
         @PathVariable("id") String id
     ) {
+        log.info("Find messages in channel({}) of user({})", id, currentUserId);
+
         return ResponseEntity.ok().body(chatService.findMessagesByChannelId(id, currentUserId));
     }
 
-    @PostMapping("/channels")
+    @PostMapping
     public ResponseEntity<ChannelResponse> createGroupChannel(
         @CurrentUserId String currentUserId,
         @RequestBody NewGroupChannelRequest request
     ) {
-        return ResponseEntity.ok().body(chatService.createNewGroupChannel(currentUserId, request));
+        log.info("Create new group channel with name ({})", request.getName());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatService.createNewGroupChannel(currentUserId, request));
     }
 
-    @PostMapping("/channels/{id}")
+    @PostMapping("/{id}")
     public ResponseEntity<ChannelResponse> join(
         @CurrentUserId String currentUserId,
         @PathVariable("id") String id
     ) throws JsonProcessingException {
+        log.info("User({}) joins channel({})", currentUserId, id);
+
         return ResponseEntity.ok().body(chatService.join(currentUserId, id));
     }
 
-    @GetMapping("/channels/{channelId}/messages/{messageId}")
+    @GetMapping("/{channelId}/messages/{messageId}")
     public ResponseEntity<MessageResponse> read(
         @PathVariable("channelId") String channelId,
         @PathVariable("messageId") String messageId,
         @CurrentUserId String currentUserId
     ) {
+        log.info("User({}) reads message({}) in channel(channelId)", currentUserId, messageId, channelId);
+
         return ResponseEntity.ok().body(chatService.read(messageId, currentUserId));
     }
 
-    @PostMapping("/channels/{channelId}/messages")
+    @PostMapping("/{channelId}/messages")
     public ResponseEntity<MessageResponse> send(
-        @RequestBody NewMessageRequest request
+        @RequestBody NewMessageRequest request,
+        @PathVariable String channelId
     ) throws JsonProcessingException {
+        log.info("Send new message({}) to channel({})", request, channelId);
+
         return ResponseEntity.ok().body(chatService.send(request));
     }
 
-    @DeleteMapping("/channels/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> leave(
         @CurrentUserId String currentUserId,
         @PathVariable("id") String id
     ) throws JsonProcessingException {
+        log.info("User({}) leaves channel({})", currentUserId, id);
+
         chatService.leave(currentUserId, id);
 
         return ResponseEntity.ok().build();

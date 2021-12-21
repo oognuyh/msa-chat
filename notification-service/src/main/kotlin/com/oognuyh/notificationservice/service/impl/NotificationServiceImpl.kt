@@ -1,6 +1,7 @@
 package com.oognuyh.notificationservice.service.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.oognuyh.notificationservice.logger
 import com.oognuyh.notificationservice.payload.event.NotificationEvent
 import com.oognuyh.notificationservice.payload.response.NotificationResponse
 import com.oognuyh.notificationservice.service.NotificationService
@@ -14,6 +15,7 @@ class NotificationServiceImpl(
     private val simpMessagingTemplate: SimpMessagingTemplate,
     private val objectMapper: ObjectMapper
 ) : NotificationService {
+    private val logger = logger()
 
     @KafkaListener(
         topics = ["\${spring.kafka.template.notification-topic}"],
@@ -22,9 +24,12 @@ class NotificationServiceImpl(
     )
     override fun notify(@Payload payload: String) {
         val event = objectMapper.readValue(payload, NotificationEvent::class.java)
-        println("event: ${event}")
+
+        logger.info("Receive notification event with type ({})", event.type)
+
         event.recipientIds.forEach { recipientId ->
             simpMessagingTemplate.convertAndSend("/notifications/${recipientId}", NotificationResponse(event))
+            logger.info("Successfully send event to {}", recipientId)
         }
     }
 }

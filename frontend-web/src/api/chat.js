@@ -1,23 +1,23 @@
 import http from '@/api/http'
 
-export const getChannelsByUserId = () => http.get('/chat/channels')
+export const getChannelsByUserId = () => http.get('/chat-service/v1/channels')
 
-export const getChannelBetweenUserIds = (userId) => http.get('/chat/channels/between?userId=' + userId)
+export const getChannelBetweenUserIds = (userId) => http.get('/chat-service/v1/channels/between?userId=' + userId)
 
-export const getChannelById = (channelId) => http.get('/chat/channels/' + channelId)
+export const getChannelById = (channelId) => http.get('/chat-service/v1/channels/' + channelId)
 
-export const getMessagesByChannelId = (channelId) => http.get('/chat/channels/' + channelId + "/messages")
+export const getMessagesByChannelId = (channelId) => http.get('/chat-service/v1/channels/' + channelId + "/messages")
 
-export const send = (newMessage) => http.post('/chat/channels/' + newMessage.channelId + "/messages", newMessage)
+export const send = (newMessage) => http.post('/chat-service/v1/channels/' + newMessage.channelId + "/messages", newMessage)
 
-export const read = (channelId, messageId) => http.get(`/chat/channels/${channelId}/messages/${messageId}`)
+export const read = (channelId, messageId) => http.get(`/chat-service/v1/channels/${channelId}/messages/${messageId}`)
 
-export const leave = (channelId) => http.delete('/chat/channels/' + channelId)
+export const leave = (channelId) => http.delete('/chat-service/v1/channels/' + channelId)
 
-export const findChannelsByQuery = (queryTerm) => http.get(`/chat/channels/search?queryTerm=${queryTerm}`)
+export const findChannelsByQuery = (queryTerm) => http.get(`/chat-service/v1/channels/search?queryTerm=${queryTerm}`)
 
-export const createNewGroupChannel = (name) => http.post('/chat/channels', {
+export const createNewGroupChannel = (name) => http.post('/chat-service/v1/channels', {
     name: name
 })
 
-export const join = (channelId) => http.post(`/chat/channels/${channelId}`)
+export const join = (channelId) => http.post(`/chat-service/v1/channels/${channelId}`)
