@@ -29,14 +29,68 @@ services:
       - kafka-network
       - cloud-network
 
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - cloud-network
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./env/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - cloud-network
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    depends_on:
+      - prometheus
+      - loki
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: password
+    volumes:
+      - ./env/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+    networks:
+      - cloud-network
+
+  loki:
+    image: grafana/loki
+    container_name: loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - cloud-network
+
+  fluent-bit:
+    image: grafana/fluent-bit-plugin-loki
+    container_name: fluent-bit
+    volumes:
+      - ./env/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - cloud-network
+
   config-service:
-    image: oognuyh/msa-chat-config-service
+    image: oognuyh/msa-chat-config-service:latest
     container_name: config-service
     networks:
       - cloud-network
       
   discovery-service:
-    image: oognuyh/msa-chat-discovery-service
+    image: oognuyh/msa-chat-discovery-service:latest
     container_name: discovery-service
     depends_on:
       - config-service
@@ -49,7 +103,7 @@ services:
       - cloud-network
       
   gateway-service:
-    image: oognuyh/msa-chat-gateway-service
+    image: oognuyh/msa-chat-gateway-service:latest
     container_name: gateway-service
     depends_on:
       - discovery-service
@@ -105,7 +159,7 @@ services:
       - auth-network
       
   user-service:
-    image: oognuyh/msa-chat-user-service
+    image: oognuyh/msa-chat-user-service:latest
     container_name: user-service
     depends_on:
       - gateway-service
@@ -115,9 +169,13 @@ services:
     entrypoint: sh -c "/wait.sh gateway-service:8082 -t 120 && java -Xmx200m -jar service.jar"
     networks:
       - cloud-network
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224  
       
   image-service:
-    image: oognuyh/msa-chat-image-service
+    image: oognuyh/msa-chat-image-service:latest
     container_name: image-service
     depends_on:
       - minio
@@ -127,6 +185,10 @@ services:
     networks:
       - image-network
       - cloud-network
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224  
       
   minio:
     image: minio/minio
@@ -149,7 +211,7 @@ services:
       - image-network
     
   friend-service:
-    image: oognuyh/msa-chat-friend-service
+    image: oognuyh/msa-chat-friend-service:latest
     container_name: friend-service
     depends_on:
       - user-service
@@ -159,6 +221,10 @@ services:
     networks:
       - cloud-network
       - friend-network
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224  
       
   friend-service-db:
     image: mysql:latest
@@ -180,7 +246,7 @@ services:
       - friend-network
   
   chat-service:
-    image: oognuyh/msa-chat-chat-service
+    image: oognuyh/msa-chat-chat-service:latest
     container_name: chat-service
     depends_on:
       - user-service
@@ -191,6 +257,10 @@ services:
     networks:
       - cloud-network
       - chat-network
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224  
       
   chat-service-db:
     image: mongo:latest
@@ -207,7 +277,7 @@ services:
       - chat-network
       
   notification-service:
-    image: oognuyh/msa-chat-notification-service
+    image: oognuyh/msa-chat-notification-service:latest
     container_name: notification-service
     depends_on:
       - kafka
@@ -217,6 +287,10 @@ services:
     entrypoint: sh -c "/wait.sh gateway-service:8082 -t 120 && java -Xmx200m -jar service.jar"
     networks:
       - cloud-network
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224  
       
   frontend-web:
     image: oognuyh/msa-chat-frontend-web:latest
@@ -228,7 +302,11 @@ services:
       - auth-service
     networks:
       - cloud-network
-      
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+              
 networks:
   cloud-network:
   auth-network:
