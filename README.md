@@ -23,7 +23,7 @@ Spring Cloud, WebSocket, Vue, Kafka, Keycloak, Minio를 활용하여 구현한 �
 - Tool
     - Visual Studio Code, Intellij
 
-## Systen architecture
+## System architecture
 ![system-architecture](https://raw.githubusercontent.com/oognuyh/msa-chat/master/images/system-architecture.png)  
 Github에 푸쉬하면 Github Actions를 활용하여 빌드 후 이미지를 Docker Hub에 푸쉬하며, 푸쉬된 이미지를 Docker Compose를 활용하여 다중 어플리케이션 환경을 구축했습니다. 서비스 간 통신이 필요한 경우 Kafka와 Open Feign을 활용했습니다. 인증, 인가 서비스를 Keycloak 오픈소스를 활용하였고 이미지 서비스에 MinIO 오브젝트 스토리지 서버를 연결했습니다. 또한, 서비스들의 로그, 메트릭 그리고 추적을 시각화하여 관리할 수 있도록 구성했습니다.
 
