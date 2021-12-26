@@ -21,9 +21,6 @@ export default {
     SET_CHANNEL(state, channel) {
       state.channel = channel
     },
-    SET_MESSAGES(state, messages) {
-      state.channel.messages = messages
-    },
     ADD_MESSAGE(state, message) {
       state.channel.messages.push(message)
     }
@@ -35,15 +32,6 @@ export default {
 
         commit('SET_CHANNEL', data)
         dispatch('channels/getChannelsByUserId', null, { root: true })
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    async getMessagesByChannelId({ commit, state }) {
-      try {
-        const { data } = await chatApi.getMessagesByChannelId(state.channel.id)
-
-        commit('SET_MESSAGES', data)
       } catch (error) {
         console.error(error)
       }

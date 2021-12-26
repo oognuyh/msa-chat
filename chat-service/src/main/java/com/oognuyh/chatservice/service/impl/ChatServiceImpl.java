@@ -29,8 +29,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -87,19 +85,6 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public List<MessageResponse> findMessagesByChannelId(String channelId, String userId) {
-        messageRepository.saveAll(
-            messageRepository.findMessagesByChannelIdAndUnreaderIds(channelId, userId).stream()
-                .map(unreadMessage -> unreadMessage.read(userId))
-                .collect(Collectors.toList())
-        );
-
-        return messageRepository.findMessagesByChannelId(channelId).stream()
-            .map(MessageResponse::of)
-            .collect(Collectors.toList());
-    }
-
-    @Override
     public ChannelResponse findChannelBetweenUserIds(String currentUserId, String userId) {
         List<String> participantIds = List.of(currentUserId, userId).stream().sorted().collect(Collectors.toList());
         Optional<Channel> existingChannel = channelRepository.findChannelByTypeAndParticipantIds(Type.DIRECT, participantIds);
@@ -132,22 +117,19 @@ public class ChatServiceImpl implements ChatService {
         
         log.info("Successfully updated channel({})", request.getChannelId());
 
-        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String senderName = jwt.getClaimAsString("name");
-
-        log.info("Notify recipients({}) of new message", newMessage.getUnreaderIds());
-
         kafkaTemplate.send(
             NOTIFICATION_TOPIC, 
             objectMapper.writeValueAsString(NotificationEvent.builder()
                 .type(NotificationType.NEW_MESSAGE)
                 .senderId(request.getSenderId())
-                .message(String.format("%s: %s", senderName, newMessage.getContent()))
+                .message(String.format("%s: %s", request.getSenderName(), newMessage.getContent()))
                 .recipientIds(newMessage.getUnreaderIds())
                 .channelId(newMessage.getChannelId())
                 .messageId(newMessage.getId())
                 .build())
         );
+
+        log.info("Notify recipients({}) of new message", newMessage.getUnreaderIds());
 
         return MessageResponse.of(newMessage);
     }

@@ -95,8 +95,6 @@ export default {
   methods: {
     ...mapActions({
       getChannelById: 'channel/getChannelById',
-      getMessagesByChannelId: 'channel/getMessagesByChannelId',
-      read: 'channel/read',
       leave: 'channel/leave'
     }),
     send() {

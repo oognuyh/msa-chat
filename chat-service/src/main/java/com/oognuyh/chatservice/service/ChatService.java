@@ -11,7 +11,6 @@ import com.oognuyh.chatservice.payload.response.MessageResponse;
 public interface ChatService {
     
     List<ChannelResponse> findChannelsByUserId(String userId);
-    List<MessageResponse> findMessagesByChannelId(String channelId, String userId);
     List<ChannelResponse> search(String queryTerm);
     ChannelResponse findChannelBetweenUserIds(String currentUserId, String userId);
     ChannelResponse findChannelById(String channelId, String userId);

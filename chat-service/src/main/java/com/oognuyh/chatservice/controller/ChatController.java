@@ -69,16 +69,6 @@ public class ChatController {
         return ResponseEntity.ok().body(chatService.findChannelBetweenUserIds(currentUserId, userId));
     }
 
-    @GetMapping("/{id}/messages")
-    public ResponseEntity<List<MessageResponse>> findMessagesByChannelId(
-        @CurrentUserId String currentUserId,
-        @PathVariable("id") String id
-    ) {
-        log.info("Find messages in channel({}) of user({})", id, currentUserId);
-
-        return ResponseEntity.ok().body(chatService.findMessagesByChannelId(id, currentUserId));
-    }
-
     @PostMapping
     public ResponseEntity<ChannelResponse> createGroupChannel(
         @CurrentUserId String currentUserId,
