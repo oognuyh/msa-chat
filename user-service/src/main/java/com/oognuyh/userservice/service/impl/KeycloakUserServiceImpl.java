@@ -40,8 +40,8 @@ import lombok.extern.slf4j.Slf4j;
 public class KeycloakUserServiceImpl implements UserService {
     private final KeycloakProperties keycloakProperties;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
     private final Keycloak keycloak;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${spring.kafka.template.user-changed-topic}")
     private String USER_CHANGED_TOPIC;

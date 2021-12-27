@@ -32,3 +32,35 @@ spring:
     activate:
       on-profile: prod
     import: configserver:http://config-service:8083
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers:http://localhost:9092}
+    template:
+      notification-topic: notification-topic
+      user-changed-topic: user-changed-topic
+    consumer:
+      avatar-changed-group-id: avatar-changed-group-id
+      
+  cloud:
+    config:
+      enabled: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/auth/realms/chat/protocol/openid-connect/certs
+
+  sleuth:
+    enabled: false
+
+eureka:
+  client:
+    enabled: false
