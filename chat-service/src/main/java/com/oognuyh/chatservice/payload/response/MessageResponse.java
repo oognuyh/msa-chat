@@ -5,9 +5,11 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.oognuyh.chatservice.model.Message;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class MessageResponse {
     
     private String id;

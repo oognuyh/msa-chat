@@ -107,7 +107,7 @@ public class ChatController {
     ) throws JsonProcessingException {
         log.info("Send new message({}) to channel({})", request, channelId);
 
-        return ResponseEntity.ok().body(chatService.send(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatService.send(request));
     }
 
     @DeleteMapping("/{id}")
