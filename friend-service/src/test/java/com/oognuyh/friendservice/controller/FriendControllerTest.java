@@ -97,7 +97,7 @@ public class FriendControllerTest {
 
         // when
         ResultActions resultActions = mockMvc
-                .perform(MockMvcRequestBuilders.delete("/v1/friends/id")
+                .perform(MockMvcRequestBuilders.delete("/v1/friends/{id}")
                         .with(jwt().jwt(jwt -> jwt.subject("userId"))))
                 .andDo(MockMvcResultHandlers.print());
 

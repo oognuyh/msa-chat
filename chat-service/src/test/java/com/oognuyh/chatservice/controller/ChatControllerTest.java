@@ -107,7 +107,7 @@ public class ChatControllerTest {
     
         // when
         ResultActions resultActions = mockMvc
-            .perform(MockMvcRequestBuilders.get("/v1/channels/{}", channelId)
+            .perform(MockMvcRequestBuilders.get("/v1/channels/{channelId}", channelId)
                 .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(userId))))
             .andDo(MockMvcResultHandlers.print());
         
@@ -195,7 +195,7 @@ public class ChatControllerTest {
 
         // when
         ResultActions resultActions = mockMvc
-            .perform(MockMvcRequestBuilders.post("/v1/channels/{}", channelId)
+            .perform(MockMvcRequestBuilders.post("/v1/channels/{channelId}", channelId)
                 .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(userId))))
             .andDo(MockMvcResultHandlers.print());
 
@@ -221,7 +221,7 @@ public class ChatControllerTest {
 
         // when
         ResultActions resultActions = mockMvc
-            .perform(MockMvcRequestBuilders.get("/v1/channels/{}/messages/{}", channelId, messageId)
+            .perform(MockMvcRequestBuilders.get("/v1/channels/{channelId}/messages/{messageId}", channelId, messageId)
                 .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(userId))))
             .andDo(MockMvcResultHandlers.print());
 
@@ -257,7 +257,7 @@ public class ChatControllerTest {
 
         // when
         ResultActions resultActions = mockMvc
-            .perform(MockMvcRequestBuilders.post("/v1/channels/{}/messages", channelId)
+            .perform(MockMvcRequestBuilders.post("/v1/channels/{channelId}/messages", channelId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
                 .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(userId))))
@@ -282,7 +282,7 @@ public class ChatControllerTest {
 
         // when
         ResultActions resultActions = mockMvc
-            .perform(MockMvcRequestBuilders.delete("/v1/channels/{}", channelId)
+            .perform(MockMvcRequestBuilders.delete("/v1/channels/{channelId}", channelId)
                 .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(userId))))
             .andDo(MockMvcResultHandlers.print());
 

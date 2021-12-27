@@ -79,7 +79,7 @@ public class ImageControllerTest {
 
         // when
         ResultActions resultActions = mockMvc
-            .perform(MockMvcRequestBuilders.delete("/v1/images/avatars/{}", avatarId)
+            .perform(MockMvcRequestBuilders.delete("/v1/images/avatars/{avatarId}", avatarId)
                 .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(userId))))
             .andDo(MockMvcResultHandlers.print());
 

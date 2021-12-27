@@ -59,7 +59,7 @@ public class PublicImageControllerTest {
 
         // when
         ResultActions resultActions = mockMvc
-            .perform(MockMvcRequestBuilders.get("/images/avatars/{}", avatarId))
+            .perform(MockMvcRequestBuilders.get("/images/avatars/{avatarId}", avatarId))
             .andDo(MockMvcResultHandlers.print());
 
         // then

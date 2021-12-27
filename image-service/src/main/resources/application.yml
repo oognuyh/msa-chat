@@ -49,6 +49,9 @@ spring:
     config:
       enabled: false
 
+  sleuth:
+    enabled: false
+
   security:
     oauth2:
       resourceserver:
