@@ -1,6 +1,6 @@
 package com.oognuyh.notificationservice.service.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.oognuyh.notificationservice.logger
 import com.oognuyh.notificationservice.payload.event.NotificationEvent
 import com.oognuyh.notificationservice.payload.response.NotificationResponse
@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class NotificationServiceImpl(
-    private val simpMessagingTemplate: SimpMessagingTemplate,
-    private val objectMapper: ObjectMapper
+    private val simpMessagingTemplate: SimpMessagingTemplate
 ) : NotificationService {
     private val logger = logger()
 
@@ -23,7 +22,7 @@ class NotificationServiceImpl(
         containerFactory = "notificationListenerFactory"
     )
     override fun notify(@Payload payload: String) {
-        val event = objectMapper.readValue(payload, NotificationEvent::class.java)
+        val event = jacksonObjectMapper().readValue(payload, NotificationEvent::class.java)
 
         logger.info("Receive notification event with type ({})", event.type)
 
