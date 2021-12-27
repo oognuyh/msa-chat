@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ImageServiceImpl implements ImageService {
     private final MinioClient minioClient;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${spring.kafka.template.avatar-changed-topic}")
     private String AVATAR_CHANGED_TOPIC;

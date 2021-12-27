@@ -39,3 +39,28 @@ spring:
   config:
     activate:
       on-profile: test
+
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers:http://localhost:9092}
+    template:
+      avatar-changed-topic: avatar-changed-topic
+
+  cloud:
+    config:
+      enabled: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/auth/realms/chat/protocol/openid-connect/certs
+
+minio:
+  endpoint: test
+  access_key: test
+  secret_key: test
+  bucket: test
+
+eureka:
+  client:
+    enabled: false

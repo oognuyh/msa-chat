@@ -25,7 +25,8 @@ public class PublicImageController {
         @PathVariable String avatarId
     ) throws IOException {
         GetObjectResponse avatar = imageService.findAvatarByAvatarId(avatarId);
-         return ResponseEntity.ok()
+        
+        return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, avatar.headers().get(HttpHeaders.CONTENT_TYPE))
             .body(avatar.readAllBytes());
     }
