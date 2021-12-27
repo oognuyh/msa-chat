@@ -32,3 +32,28 @@ spring:
     activate:
       on-profile: prod
     import: configserver:http://config-service:8083
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+
+  sleuth:
+    enabled: false
+
+  cloud:
+    config:
+      enabled: false
+
+  kafka:
+    template:
+      notification-topic: notification-topic
+    consumer:
+      notification-group-id: notification-group-id
+
+eureka:
+  client:
+    enabled: false
